@@ -3,6 +3,8 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Diagnostics;
+using System.Collections.Generic;
 
 namespace Lang100
 {
@@ -31,14 +33,108 @@ namespace Lang100
         [TestMethod]
         public void Test21()
         {
-            //var reg = new Regex("\\[\\[カテゴリ:(.*?)\\]\\]", RegexOptions.Compiled);
-            var reg = new Regex("カテゴリ", RegexOptions.Compiled);
+            var result = new List<int>();
+            
+            var reg = new Regex("\\[\\[カテゴリ:(.*?)\\]\\]", RegexOptions.Compiled);
             for (var i = 0; i < _targetLines.Length; i++ )
             {
                 var line = _targetLines[i];
                 var matches = reg.Matches(line);
-                
+                if (matches.Count > 0) result.Add(i);
              }
+        }
+
+        [TestMethod]
+        public void Test22()
+        {
+            var result = new Dictionary<int, string>();
+
+            var reg = new Regex("\\[\\[カテゴリ:(.*?)\\]\\]", RegexOptions.Compiled);
+            for (var i = 0; i < _targetLines.Length; i++)
+            {
+                var line = _targetLines[i];
+                var matches = reg.Matches(line);
+
+                if (matches.Count == 0) continue;
+
+                var categories = "";
+                foreach(Match m in matches)
+                {
+                    categories += (m.Groups[1].Value + " ");
+                }
+                result.Add(i, categories);
+            }
+        }
+
+        [TestMethod]
+        public void Test23()
+        {
+            var result = new Dictionary<int, string>();
+
+            var reg = new Regex("(={2,}) (.*?) (={2,})", RegexOptions.Compiled);
+            for (var i = 0; i < _targetLines.Length; i++)
+            {
+                var line = _targetLines[i];
+                var matches = reg.Matches(line);
+
+                if (matches.Count == 0) continue;
+
+                var categories = "";
+                foreach (Match m in matches)
+                {
+                    categories += string.Format("{0}:{1} ", m.Groups[1].Value.Length, m.Groups[2].Value);
+                }
+                result.Add(i, categories);
+            }
+        }
+
+        [TestMethod]
+        public void Test24()
+        {
+            var result = new Dictionary<int, string>();
+
+            var reg = new Regex("\\[\\[ファイル:(.*?)\\|", RegexOptions.Compiled);
+            for (var i = 0; i < _targetLines.Length; i++)
+            {
+                var line = _targetLines[i];
+                var matches = reg.Matches(line);
+
+                if (matches.Count == 0) continue;
+
+                var categories = "";
+                foreach (Match m in matches)
+                {
+                    categories += (m.Groups[1].Value + " ");
+                }
+                result.Add(i, categories);
+            }
+        }
+
+        [TestMethod]
+        public void Test25()
+        {
+            var result = new Dictionary<int, Dictionary<string, string>>();
+
+            for (var i = 0; i < _targetLines.Length; i++)
+            {
+                var line = _targetLines[i];
+                var m = Regex.Match(line, "\\{\\{基礎情報[^\\|]*(.*?)\\}\\}\\\\n[^\\|]");
+                if (!m.Success)
+                {
+                    Debug.WriteLine("[{0}] not found.", i);
+                    continue;
+                }
+
+                var infoStr = m.Groups[1].Value;
+                var infoArray = infoStr.Split(new[] { "\\n" }, StringSplitOptions.RemoveEmptyEntries);
+                var infoDic = new Dictionary<string, string>();
+                foreach(var info in infoArray)
+                {
+                    var m2 = Regex.Match(info, "\\|(.*) =(.*)$");
+                    infoDic[m2.Groups[1].Value] = m2.Groups[2].Value;
+                }
+                result[i] = infoDic;
+            }
         }
     }
 }
