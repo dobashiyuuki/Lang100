@@ -113,6 +113,11 @@ namespace Lang100
         [TestMethod]
         public void Test25()
         {
+            var result = InnerTest25();
+        }
+
+        private static Dictionary<int, Dictionary<string, string>> InnerTest25()
+        {
             var result = new Dictionary<int, Dictionary<string, string>>();
 
             for (var i = 0; i < _targetLines.Length; i++)
@@ -128,12 +133,65 @@ namespace Lang100
                 var infoStr = m.Groups[1].Value;
                 var infoArray = infoStr.Split(new[] { "\\n" }, StringSplitOptions.RemoveEmptyEntries);
                 var infoDic = new Dictionary<string, string>();
-                foreach(var info in infoArray)
+                foreach (var info in infoArray)
                 {
                     var m2 = Regex.Match(info, "\\|(.*) =(.*)$");
                     infoDic[m2.Groups[1].Value] = m2.Groups[2].Value;
                 }
                 result[i] = infoDic;
+            }
+
+            return result;
+        }
+
+        [TestMethod]
+        public void Test26()
+        {
+            var orgDic = InnerTest25();
+            var resultDic = new Dictionary<int, Dictionary<string, string>>();
+
+            foreach (var lineKvp in orgDic)
+            {
+                var lineNo = lineKvp.Key;
+                var infoDic = lineKvp.Value;
+                
+                var resultInfoDic = new Dictionary<string, string>();
+                resultDic[lineNo] = resultInfoDic;
+
+                foreach(var infoKvp in infoDic)
+                {
+                    var key = infoKvp.Key;
+                    var val = infoKvp.Value;
+
+                    var replaced = Regex.Replace(val, "'''''([^']+?)'''''|'''([^']+?)'''|''([^']+?)''", "$1");
+                    resultInfoDic[key] = replaced;
+                }
+            }
+        }
+
+        [TestMethod]
+        public void Test27()
+        {
+            var orgDic = InnerTest25();
+            var resultDic = new Dictionary<int, Dictionary<string, string>>();
+
+            foreach (var lineKvp in orgDic)
+            {
+                var lineNo = lineKvp.Key;
+                var infoDic = lineKvp.Value;
+
+                var resultInfoDic = new Dictionary<string, string>();
+                resultDic[lineNo] = resultInfoDic;
+
+                foreach (var infoKvp in infoDic)
+                {
+                    var key = infoKvp.Key;
+                    var val = infoKvp.Value;
+
+                    var replaced = Regex.Replace(val, "'''''([^']+?)'''''|'''([^']+?)'''|''([^']+?)''", "$1");
+                    replaced = Regex.Replace(replaced, "\\[\\[(?:.*?)\\|?(.+?)\\]\\]", "$1");
+                    resultInfoDic[key] = replaced;
+                }
             }
         }
     }
